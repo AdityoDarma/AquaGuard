@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Riwayat Prediksi{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <h1 class="hero-title">Riwayat <span class="hero-accent">Prediksi</span></h1>
+  <p class="hero-desc">Seluruh hasil prediksi kualitas air yang telah dilakukan tersimpan di sini.</p>
+</section>
+
+<!-- Statistik -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-num">{{ stat.total }}</div>
+    <div class="stat-label">Total Prediksi</div>
+  </div>
+  <div class="stat-card stat-aman">
+    <div class="stat-num">{{ stat.AMAN }}</div>
+    <div class="stat-label">🟢 AMAN</div>
+  </div>
+  <div class="stat-card stat-waspada">
+    <div class="stat-num">{{ stat.WASPADA }}</div>
+    <div class="stat-label">🟡 WASPADA</div>
+  </div>
+  <div class="stat-card stat-bahaya">
+    <div class="stat-num">{{ stat.BERBAHAYA }}</div>
+    <div class="stat-label">🔴 BERBAHAYA</div>
+  </div>
+</div>
+
+<!-- Grafik tren -->
+{% if riwayat %}
+<section class="card tren-card">
+  <div class="card-header">
+    <span class="card-icon">📈</span>
+    <h2>Grafik Tren Parameter (50 data terakhir)</h2>
+  </div>
+  <div class="chart-tabs">
+    <button class="chart-tab active" data-param="suhu">Suhu</button>
+    <button class="chart-tab" data-param="pH">pH</button>
+    <button class="chart-tab" data-param="DO">DO</button>
+    <button class="chart-tab" data-param="amonia">Amonia</button>
+    <button class="chart-tab" data-param="nitrat">Nitrat</button>
+    <button class="chart-tab" data-param="TDS">TDS</button>
+    <button class="chart-tab" data-param="turbidity">Turbidity</button>
+  </div>
+  <div class="chart-wrap">
+    <canvas id="trenChart"></canvas>
+  </div>
+</section>
+{% endif %}
+
+<!-- Filter & aksi -->
+<section class="card">
+  <div class="riwayat-toolbar">
+    <div class="filter-group">
+      <span class="filter-label">Filter:</span>
+      <a href="/riwayat" class="fbtn {% if not filter_status %}fbtn-active{% endif %}">Semua</a>
+      <a href="/riwayat?status=AMAN"     class="fbtn fbtn-aman     {% if filter_status=='AMAN' %}fbtn-active{% endif %}">🟢 AMAN</a>
+      <a href="/riwayat?status=WASPADA"  class="fbtn fbtn-waspada  {% if filter_status=='WASPADA' %}fbtn-active{% endif %}">🟡 WASPADA</a>
+      <a href="/riwayat?status=BERBAHAYA" class="fbtn fbtn-bahaya {% if filter_status=='BERBAHAYA' %}fbtn-active{% endif %}">🔴 BERBAHAYA</a>
+    </div>
+    <div class="action-group">
+      <a href="/riwayat/export-json" class="btn btn-outline btn-sm">⬇ Export JSON</a>
+      {% if riwayat %}
+      <form method="POST" action="/riwayat/hapus-semua" onsubmit="return confirm('Hapus semua riwayat?')">
+        <button class="btn btn-danger btn-sm">🗑 Hapus Semua</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if riwayat %}
+  <div class="table-wrap">
+    <table class="riwayat-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Waktu</th><th>Suhu</th><th>pH</th><th>DO</th>
+          <th>Amonia</th><th>Nitrat</th><th>TDS</th><th>Turb.</th>
+          <th>Status</th><th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in riwayat %}
+        <tr>
+          <td class="td-id">{{ r.id }}</td>
+          <td class="td-waktu">{{ r.waktu }}</td>
+          <td>{{ '%.1f'|format(r.suhu) }}</td>
+          <td>{{ '%.1f'|format(r.pH) }}</td>
+          <td>{{ '%.1f'|format(r.DO) }}</td>
+          <td>{{ '%.2f'|format(r.amonia) }}</td>
+          <td>{{ '%.1f'|format(r.nitrat) }}</td>
+          <td>{{ '%.0f'|format(r.TDS) }}</td>
+          <td>{{ '%.1f'|format(r.turbidity) }}</td>
+          <td>
+            <span class="badge badge-{{ r.status|lower }}">{{ r.status }}</span>
+          </td>
+          <td>
+            <form method="POST" action="/riwayat/hapus/{{ r.id }}">
+              <input type="hidden" name="filter_status" value="{{ filter_status }}"/>
+              <button class="btn-icon" title="Hapus">🗑</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="idle-icon">📭</div>
+    <p>Belum ada riwayat prediksi.{% if filter_status %} Coba hilangkan filter.{% endif %}</p>
+    <a href="/" class="btn btn-primary" style="margin-top:16px">Buat Prediksi Pertama</a>
+  </div>
+  {% endif %}
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script>
+const RIWAYAT_DATA = {{ riwayat | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/tren.js') }}"></script>
+{% endblock %}

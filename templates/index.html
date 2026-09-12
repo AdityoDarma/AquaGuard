@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}Prediksi{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <h1 class="hero-title">Sistem Peringatan Dini<br/><span class="hero-accent">Kualitas Air Kolam</span></h1>
+  <p class="hero-desc">Masukkan hasil pengukuran parameter air kolam untuk mendapatkan prediksi status kualitas air secara real-time menggunakan algoritma Random Forest.</p>
+</section>
+
+<div class="grid-layout">
+
+  <!-- ── FORM INPUT ── -->
+  <section class="card form-card">
+    <div class="card-header">
+      <span class="card-icon">⚗️</span>
+      <h2>Input Parameter</h2>
+    </div>
+
+    <form id="predForm" novalidate>
+      <div class="param-grid">
+
+        <div class="param-item">
+          <label for="suhu">Suhu Air <span class="param-unit">°C</span></label>
+          <div class="input-wrap">
+            <input type="number" id="suhu" step="0.1" min="15" max="40" placeholder="cth: 28.0" required/>
+            <span class="input-hint">Optimal: 26–30°C</span>
+            <div class="tooltip">Suhu mempengaruhi metabolisme dan nafsu makan lele. Terlalu tinggi menyebabkan stres.</div>
+          </div>
+        </div>
+
+        <div class="param-item">
+          <label for="pH">pH Air <span class="param-unit">—</span></label>
+          <div class="input-wrap">
+            <input type="number" id="pH" step="0.1" min="0" max="14" placeholder="cth: 7.5" required/>
+            <span class="input-hint">Optimal: 7.0–8.0</span>
+            <div class="tooltip">pH menentukan keseimbangan kimia air. pH terlalu asam atau basa merusak insang lele.</div>
+          </div>
+        </div>
+
+        <div class="param-item">
+          <label for="DO">Dissolved Oxygen <span class="param-unit">mg/L</span></label>
+          <div class="input-wrap">
+            <input type="number" id="DO" step="0.1" min="0" max="20" placeholder="cth: 6.5" required/>
+            <span class="input-hint">Optimal: &gt;5 mg/L</span>
+            <div class="tooltip">Oksigen terlarut vital untuk pernapasan ikan. DO rendah menyebabkan lele megap-megap ke permukaan.</div>
+          </div>
+        </div>
+
+        <div class="param-item">
+          <label for="amonia">Amonia (NH₃) <span class="param-unit">mg/L</span></label>
+          <div class="input-wrap">
+            <input type="number" id="amonia" step="0.01" min="0" max="10" placeholder="cth: 0.05" required/>
+            <span class="input-hint">Optimal: &lt;0.1 mg/L</span>
+            <div class="tooltip">Amonia berasal dari sisa pakan dan kotoran ikan. Konsentrasi tinggi merusak insang dan hati.</div>
+          </div>
+        </div>
+
+        <div class="param-item">
+          <label for="nitrat">Nitrat (NO₃) <span class="param-unit">mg/L</span></label>
+          <div class="input-wrap">
+            <input type="number" id="nitrat" step="0.1" min="0" max="200" placeholder="cth: 30.0" required/>
+            <span class="input-hint">Optimal: &lt;50 mg/L</span>
+            <div class="tooltip">Nitrat adalah produk akhir nitrifikasi. Akumulasi tinggi menandakan kolam sudah lama tidak diganti.</div>
+          </div>
+        </div>
+
+        <div class="param-item">
+          <label for="TDS">TDS <span class="param-unit">mg/L</span></label>
+          <div class="input-wrap">
+            <input type="number" id="TDS" step="1" min="0" max="1000" placeholder="cth: 350" required/>
+            <span class="input-hint">Optimal: 200–500 mg/L</span>
+            <div class="tooltip">Total Dissolved Solids mencerminkan total mineral dan garam dalam air. Terlalu tinggi mengganggu osmoregulasi lele.</div>
+          </div>
+        </div>
+
+        <div class="param-item param-item--full">
+          <label for="turbidity">Turbidity / Kekeruhan <span class="param-unit">NTU</span></label>
+          <div class="input-wrap">
+            <input type="number" id="turbidity" step="0.1" min="0" max="500" placeholder="cth: 15.0" required/>
+            <span class="input-hint">Optimal: &lt;25 NTU</span>
+            <div class="tooltip">Kekeruhan air menentukan penetrasi cahaya. Air terlalu keruh menandakan blooming alga atau partikel tinggi.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Gauge row -->
+      <div class="gauge-row" id="gaugeRow"></div>
+
+      <div class="form-actions">
+        <button type="button" id="btnReset" class="btn btn-secondary">Reset</button>
+        <button type="submit" id="btnPredict" class="btn btn-primary">Prediksi Kualitas Air</button>
+      </div>
+
+      <div class="quickfill">
+        <span class="quickfill-label">Isi contoh:</span>
+        <button type="button" class="qbtn qbtn--aman"    data-preset="aman">🟢 AMAN</button>
+        <button type="button" class="qbtn qbtn--waspada" data-preset="waspada">🟡 WASPADA</button>
+        <button type="button" class="qbtn qbtn--bahaya"  data-preset="bahaya">🔴 BERBAHAYA</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ── RESULT PANEL ── -->
+  <section class="card result-card" id="resultCard">
+
+    <div class="result-idle" id="stateIdle">
+      <div class="idle-icon">💧</div>
+      <p>Hasil prediksi akan muncul di sini setelah kamu mengisi parameter dan menekan <strong>Prediksi</strong>.</p>
+    </div>
+
+    <div class="result-loading" id="stateLoading">
+      <div class="loader-ring"></div>
+      <p>Menganalisis kualitas air...</p>
+    </div>
+
+    <div class="result-content" id="stateResult">
+
+      <div class="status-banner" id="statusBanner">
+        <div class="status-emoji" id="statusEmoji"></div>
+        <div class="status-text">
+          <div class="status-label">Status Kualitas Air</div>
+          <div class="status-value" id="statusValue"></div>
+        </div>
+      </div>
+
+      <div class="prob-section">
+        <h3 class="section-title">Skor Keputusan</h3>
+        <div class="prob-bars" id="probBars"></div>
+      </div>
+
+      <div class="warn-section">
+        <h3 class="section-title">Parameter Menyimpang</h3>
+        <ul class="warn-list" id="warnList"></ul>
+      </div>
+
+      <div class="reko-section">
+        <h3 class="section-title">Rekomendasi Tindakan</h3>
+        <p class="reko-text" id="rekoText"></p>
+      </div>
+
+      <div class="result-actions">
+        <button type="button" class="btn btn-secondary" id="btnUlang">Prediksi Ulang</button>
+        <button type="button" class="btn btn-outline"   id="btnPDF">⬇ Unduh PDF</button>
+      </div>
+    </div>
+
+    <div class="result-error" id="stateError">
+      <div class="error-icon">⚠️</div>
+      <p id="errorMsg">Terjadi kesalahan. Silakan coba lagi.</p>
+    </div>
+
+  </section>
+</div>
+
+<!-- ── BATCH CSV UPLOAD ── -->
+<section class="card batch-card">
+  <div class="card-header">
+    <span class="card-icon">📁</span>
+    <h2>Prediksi Batch CSV</h2>
+  </div>
+
+  <form id="batchForm" class="batch-form" novalidate>
+    <label class="file-drop" for="csvFile">
+      <span class="file-icon">⬆</span>
+      <span class="file-main" id="csvFileName">Pilih file CSV parameter kualitas air</span>
+      <span class="file-sub">Header wajib: suhu, pH, DO, amonia, nitrat, TDS, turbidity</span>
+      <input type="file" id="csvFile" accept=".csv,text/csv"/>
+    </label>
+
+    <div class="batch-actions">
+      <button type="button" class="btn btn-secondary" id="btnTemplate">Unduh Template</button>
+      <button type="submit" class="btn btn-primary" id="btnBatch">Prediksi CSV</button>
+    </div>
+  </form>
+
+  <div class="batch-result" id="batchResult"></div>
+</section>
+
+<!-- ── STANDAR REFERENSI ── -->
+<section class="card ref-card">
+  <div class="card-header">
+    <span class="card-icon">📋</span>
+    <h2>Standar Parameter Kualitas Air Lele Sangkuriang</h2>
+  </div>
+  <div class="table-wrap">
+    <table class="ref-table">
+      <thead>
+        <tr><th>Parameter</th><th>Satuan</th><th class="t-aman">🟢 Optimal</th><th class="t-waspada">🟡 Waspada</th><th class="t-bahaya">🔴 Berbahaya</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Suhu</td><td>°C</td><td>26–30</td><td>22–32</td><td>&lt;20 atau &gt;35</td></tr>
+        <tr><td>pH</td><td>—</td><td>7.0–8.0</td><td>6.5–8.5</td><td>&lt;6 atau &gt;9</td></tr>
+        <tr><td>DO (Oksigen Terlarut)</td><td>mg/L</td><td>≥5</td><td>3–&lt;5</td><td>&lt;3</td></tr>
+        <tr><td>Amonia (NH₃)</td><td>mg/L</td><td>≤0.1</td><td>&gt;0.1–0.5</td><td>&gt;0.5</td></tr>
+        <tr><td>Nitrat (NO₃)</td><td>mg/L</td><td>≤10</td><td>&gt;10–50</td><td>&gt;50</td></tr>
+        <tr><td>TDS</td><td>mg/L</td><td>200–500</td><td>100–800</td><td>&lt;100 atau &gt;1000</td></tr>
+        <tr><td>Turbidity / Kekeruhan</td><td>NTU</td><td>≤30</td><td>&gt;30–100</td><td>&gt;100</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="ref-source">Sumber: SNI 6484.4:2014 · KepMenLH No.75/2001 · Boyd (1998)</p>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/gauge.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pdf.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Tentang Sistem{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <h1 class="hero-title">Tentang <span class="hero-accent">AquaGuard</span></h1>
+  <p class="hero-desc">Informasi lengkap mengenai sistem, dataset, metode, dan referensi yang digunakan dalam penelitian ini.</p>
+</section>
+
+<div class="about-layout">
+
+  <section class="card about-summary">
+    <div class="about-summary-main">
+      <div class="card-header"><span class="card-icon">🎓</span><h2>Ringkasan Penelitian</h2></div>
+      <h3 class="about-title">Sistem Peringatan Dini Kualitas Air Kolam Ikan Lele Sangkuriang</h3>
+      <p class="about-lead">AquaGuard menggunakan algoritma klasifikasi Machine Learning untuk membantu membaca kondisi kualitas air kolam berdasarkan tujuh parameter utama.</p>
+    </div>
+    <div class="about-facts">
+      <div class="fact-item"><span>Metode</span><strong>Random Forest Classifier</strong></div>
+      <div class="fact-item"><span>Training</span><strong>Google Colab</strong></div>
+      <div class="fact-item"><span>Deployment</span><strong>Flask Web App</strong></div>
+    </div>
+  </section>
+
+  <section class="card about-performance">
+    <div class="card-header"><span class="card-icon">🤖</span><h2>Performa Model</h2></div>
+    <div class="metric-grid">
+      <div class="metric-box"><div class="metric-val" style="color:var(--cyan)">92.68%</div><div class="metric-lbl">Accuracy</div></div>
+      <div class="metric-box"><div class="metric-val" style="color:var(--green)">92.66%</div><div class="metric-lbl">Precision</div></div>
+      <div class="metric-box"><div class="metric-val" style="color:var(--yellow)">92.68%</div><div class="metric-lbl">Recall</div></div>
+      <div class="metric-box"><div class="metric-val" style="color:var(--red)">92.67%</div><div class="metric-lbl">F1-Score</div></div>
+    </div>
+    <div class="model-notes">
+      <div><span>Cross-validation</span><strong>StratifiedKFold 5-fold</strong></div>
+      <div><span>F1-macro</span><strong>0.9274 ± 0.0020</strong></div>
+      <div><span>Normalisasi</span><strong>MinMaxScaler</strong></div>
+      <div><span>Estimator</span><strong>100 trees</strong></div>
+    </div>
+  </section>
+
+  <section class="card about-dataset">
+    <div class="card-header"><span class="card-icon">📊</span><h2>Dataset</h2></div>
+    <div class="dataset-list">
+      <div class="dataset-item">
+        <span class="dataset-tag">Sumber 1</span>
+        <strong>Udanor et al. (2022)</strong>
+        <p>Sensor Based Aquaponics Fish Pond Datasets · 12 kolam · 6 parameter IoT</p>
+      </div>
+      <div class="dataset-item">
+        <span class="dataset-tag">Sumber 2</span>
+        <strong>IoT Binus 2023</strong>
+        <p>Data kolam aquaponics Indonesia · 118.286 baris · pH, TDS, Suhu</p>
+      </div>
+      <div class="dataset-item dataset-final">
+        <span class="dataset-tag">Final</span>
+        <strong>60.000 baris</strong>
+        <p>7 parameter · 3 kelas seimbang menggunakan SMOTE</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card about-parameters">
+    <div class="card-header"><span class="card-icon">🐟</span><h2>Parameter yang Dipantau</h2></div>
+    <div class="param-about-grid">
+      <div class="pa-item"><strong>Suhu</strong><span>26–30°C</span></div>
+      <div class="pa-item"><strong>pH</strong><span>7.0–8.0</span></div>
+      <div class="pa-item"><strong>DO</strong><span>&gt;5 mg/L</span></div>
+      <div class="pa-item"><strong>Amonia</strong><span>&lt;0.1 mg/L</span></div>
+      <div class="pa-item"><strong>Nitrat</strong><span>&lt;50 mg/L</span></div>
+      <div class="pa-item"><strong>TDS</strong><span>200–500 mg/L</span></div>
+      <div class="pa-item"><strong>Turbidity</strong><span>&lt;25 NTU</span></div>
+    </div>
+  </section>
+
+  <section class="card about-references">
+    <div class="card-header"><span class="card-icon">📋</span><h2>Referensi Standar</h2></div>
+    <ul class="ref-list">
+      <li>SNI 6484.4:2014 — Budidaya Ikan Lele Sangkuriang <em>(Clarias sp.)</em></li>
+      <li>KepMenLH No. 75 Tahun 2001 — Baku Mutu Air untuk Perikanan</li>
+      <li>Boyd, C.E. (1998). <em>Water Quality for Pond Aquaculture.</em> Auburn University</li>
+      <li>Udanor et al. (2022). IoT Labelled Dataset for Aquaponics Fish Pond. <em>Data in Brief.</em> doi: 10.1016/j.dib.2022.108400</li>
+    </ul>
+  </section>
+
+  <section class="card about-stack">
+    <div class="card-header"><span class="card-icon">⚙️</span><h2>Tech Stack</h2></div>
+    <div class="tech-grid">
+      <div class="tech-item"><span class="tech-icon">🐍</span><span>Python 3.10</span></div>
+      <div class="tech-item"><span class="tech-icon">🌶️</span><span>Flask 3.0</span></div>
+      <div class="tech-item"><span class="tech-icon">🤖</span><span>scikit-learn 1.5</span></div>
+      <div class="tech-item"><span class="tech-icon">🔢</span><span>NumPy</span></div>
+      <div class="tech-item"><span class="tech-icon">🗄️</span><span>SQLite</span></div>
+      <div class="tech-item"><span class="tech-icon">📊</span><span>Chart.js</span></div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
